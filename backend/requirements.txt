@@ -3,7 +3,10 @@ uvicorn
 python-multipart
 torch
 torchvision
-mediapipe
+# MediaPipe 1.x uses the Tasks API (mp.tasks.python.vision) exclusively.
+# mp.solutions (legacy) was removed in 0.10.x.  Do NOT downgrade below 1.0.0.
+mediapipe>=1.0.0
+Pillow>=10.0.0   # required by quality_service.py for reliable EXIF handling
 joblib
 scikit-learn
 xgboost
