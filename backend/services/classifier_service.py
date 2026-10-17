@@ -107,6 +107,16 @@ class ClassifierService:
         Returns:
             tuple: (predicted_class: str, confidence: float)
         """
+        predicted_class, confidence, _ = self.predict_hairline_detailed(cv2_image)
+        return predicted_class, confidence
+
+    def predict_hairline_detailed(self, cv2_image: np.ndarray) -> tuple:
+        """
+        Preprocesses OpenCV image and runs inference on the Hairline EfficientNet-B0 model.
+        
+        Returns:
+            tuple: (predicted_class: str, confidence: float, probabilities: dict)
+        """
         try:
             tensor_input = self.preprocess_image(cv2_image)
             with torch.no_grad():
@@ -116,9 +126,19 @@ class ClassifierService:
 
                 idx = predicted_idx.item()
                 conf = float(confidence.item())
-                predicted_class = self.hairline_classes[idx] if idx < len(self.hairline_classes) else "unknown"
+                
+                # Build probabilities dict
+                probs_dict = {}
+                for i, class_name in enumerate(self.hairline_classes):
+                    probs_dict[class_name] = float(probabilities[0][i].item())
+                
+                # Check uncertainty threshold
+                if conf < 0.60:
+                    predicted_class = "uncertain"
+                else:
+                    predicted_class = self.hairline_classes[idx] if idx < len(self.hairline_classes) else "unknown"
 
-                return predicted_class, conf
+                return predicted_class, conf, probs_dict
         except Exception as e:
             raise RuntimeError(f"Hairline prediction error: {str(e)}")
 
@@ -129,6 +149,16 @@ class ClassifierService:
         Returns:
             tuple: (predicted_class: str, confidence: float)
         """
+        predicted_class, confidence, _ = self.predict_jawline_detailed(cv2_image)
+        return predicted_class, confidence
+
+    def predict_jawline_detailed(self, cv2_image: np.ndarray) -> tuple:
+        """
+        Preprocesses OpenCV image and runs inference on the Jawline EfficientNet-B0 model.
+        
+        Returns:
+            tuple: (predicted_class: str, confidence: float, probabilities: dict)
+        """
         try:
             tensor_input = self.preprocess_image(cv2_image)
             with torch.no_grad():
@@ -138,8 +168,18 @@ class ClassifierService:
 
                 idx = predicted_idx.item()
                 conf = float(confidence.item())
-                predicted_class = self.jawline_classes[idx] if idx < len(self.jawline_classes) else "unknown"
+                
+                # Build probabilities dict
+                probs_dict = {}
+                for i, class_name in enumerate(self.jawline_classes):
+                    probs_dict[class_name] = float(probabilities[0][i].item())
+                
+                # Check uncertainty threshold
+                if conf < 0.60:
+                    predicted_class = "uncertain"
+                else:
+                    predicted_class = self.jawline_classes[idx] if idx < len(self.jawline_classes) else "unknown"
 
-                return predicted_class, conf
+                return predicted_class, conf, probs_dict
         except Exception as e:
             raise RuntimeError(f"Jawline prediction error: {str(e)}")

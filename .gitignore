@@ -9,3 +9,6 @@ __pycache__/
 # Machine Learning Models 
 *.pth
 *.pkl
+
+# Saved Facial Profile JSON Outputs
+outputs/
